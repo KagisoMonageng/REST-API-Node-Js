@@ -1,14 +1,33 @@
 const express = require('express');
 //const bodyParser = require('body-parser');
 
+const multer = require('multer');// Create multer object
+const imageUpload = multer({
+    storage: multer.diskStorage(
+        {
+            destination: function (req, file, cb) {
+                cb(null, 'images');
+            },
+            filename: function (req, file, cb) {
+                cb(
+                    null,
+                    new Date().valueOf() + 
+                    '_' +
+                    file.originalname
+                );
+            }
+        }
+    ), 
+});
+
 const Model = require('../models/model');
 const Pool = require('pg').Pool;
 const pool = new Pool({
     user: 'admin',  //Database username
     host: 'localhost', 
     database: 'api',
-    password: 'Password!',
-    port: 5433
+    password: 'admin12345',
+    port: 5432
   })
   
 const router = express.Router()
@@ -29,6 +48,22 @@ const router = express.Router()
 //     }catch (error) {
 //         response.status(400).json({ message: error.message });
 //     }
+
+
+router.post('/add-image',imageUpload.single('image'), (req, res) => {
+    const { filename, mimetype, size } =req.file;
+    res.send('Uploaded :'+ req.file.filename);
+
+
+})
+
+router.get('/get-image/:filename', (req, res) => {
+    const { filename } = req.params;
+    const dirname = path.resolve();
+    const fullfilepath = path.join(dirname, 'images/' + filename);
+    return res.sendFile(fullfilepath);
+    
+})
 
 router.post('/add',(request, response) => {
     try{
